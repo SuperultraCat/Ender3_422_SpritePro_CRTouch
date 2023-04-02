@@ -190,22 +190,22 @@
   #define XY_CENTER { X_CENTER, Y_CENTER }
 #endif
 #if HAS_I_AXIS
-  #define I_CENTER TERN(BED_CENTER_AT_0_0, 0, _I_HALF_BED)
+  #define I_CENTER _I_HALF_BED
 #endif
 #if HAS_J_AXIS
-  #define J_CENTER TERN(BED_CENTER_AT_0_0, 0, _J_HALF_BED)
+  #define J_CENTER _J_HALF_BED
 #endif
 #if HAS_K_AXIS
-  #define K_CENTER TERN(BED_CENTER_AT_0_0, 0, _K_HALF_BED)
+  #define K_CENTER _K_HALF_BED
 #endif
 #if HAS_U_AXIS
-  #define U_CENTER TERN(BED_CENTER_AT_0_0, 0, _U_HALF_BED)
+  #define U_CENTER _U_HALF_BED
 #endif
 #if HAS_V_AXIS
-  #define V_CENTER TERN(BED_CENTER_AT_0_0, 0, _V_HALF_BED)
+  #define V_CENTER _V_HALF_BED
 #endif
 #if HAS_W_AXIS
-  #define W_CENTER TERN(BED_CENTER_AT_0_0, 0, _W_HALF_BED)
+  #define W_CENTER _W_HALF_BED
 #endif
 
 // Get the linear boundaries of the bed
@@ -1309,9 +1309,6 @@
 /**
  * Set defaults for missing (newer) options
  */
-#if !defined(DISABLE_INACTIVE_X) && ENABLED(DISABLE_X)
-  #define DISABLE_INACTIVE_X 1
-#endif
 
 #if HAS_Y_AXIS
   #if PIN_EXISTS(Y_ENABLE) || (ENABLED(SOFTWARE_DRIVER_ENABLE) && AXIS_IS_TMC(Y))
@@ -1339,11 +1336,6 @@
   #if PIN_EXISTS(Y2_MS1)
     #define HAS_Y2_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_Y) && ENABLED(DISABLE_Y)
-    #define DISABLE_INACTIVE_Y 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_Y
 #endif
 
 #if HAS_Z_AXIS
@@ -1359,11 +1351,6 @@
   #if PIN_EXISTS(Z_MS1)
     #define HAS_Z_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_Z) && ENABLED(DISABLE_Z)
-    #define DISABLE_INACTIVE_Z 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_Z
 #endif
 
 #if NUM_Z_STEPPERS >= 2
@@ -1424,11 +1411,6 @@
   #if PIN_EXISTS(I_MS1)
     #define HAS_I_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_I) && ENABLED(DISABLE_I)
-    #define DISABLE_INACTIVE_I 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_I
 #endif
 
 #if HAS_J_AXIS
@@ -1444,11 +1426,6 @@
   #if PIN_EXISTS(J_MS1)
     #define HAS_J_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_J) && ENABLED(DISABLE_J)
-    #define DISABLE_INACTIVE_J 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_J
 #endif
 
 #if HAS_K_AXIS
@@ -1464,11 +1441,6 @@
   #if PIN_EXISTS(K_MS1)
     #define HAS_K_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_K) && ENABLED(DISABLE_K)
-    #define DISABLE_INACTIVE_K 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_K
 #endif
 
 #if HAS_U_AXIS
@@ -1484,11 +1456,6 @@
   #if PIN_EXISTS(U_MS1)
     #define HAS_U_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_U) && ENABLED(DISABLE_U)
-    #define DISABLE_INACTIVE_U 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_U
 #endif
 
 #if HAS_V_AXIS
@@ -1504,11 +1471,6 @@
   #if PIN_EXISTS(V_MS1)
     #define HAS_V_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_V) && ENABLED(DISABLE_V)
-    #define DISABLE_INACTIVE_V 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_V
 #endif
 
 #if HAS_W_AXIS
@@ -1524,11 +1486,43 @@
   #if PIN_EXISTS(W_MS1)
     #define HAS_W_MS_PINS 1
   #endif
-  #if !defined(DISABLE_INACTIVE_W) && ENABLED(DISABLE_W)
-    #define DISABLE_INACTIVE_W 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_W
+#endif
+
+#if !defined(DISABLE_INACTIVE_X) && ENABLED(DISABLE_X)
+  #define DISABLE_INACTIVE_X
+#endif
+#if !defined(DISABLE_INACTIVE_Y) && ENABLED(DISABLE_Y)
+  #define DISABLE_INACTIVE_Y
+#endif
+#if !defined(DISABLE_INACTIVE_Z) && ENABLED(DISABLE_Z)
+  #define DISABLE_INACTIVE_Z
+#endif
+#if !defined(DISABLE_INACTIVE_I) && ENABLED(DISABLE_I)
+  #define DISABLE_INACTIVE_I
+#endif
+#if !defined(DISABLE_INACTIVE_J) && ENABLED(DISABLE_J)
+  #define DISABLE_INACTIVE_J
+#endif
+#if !defined(DISABLE_INACTIVE_K) && ENABLED(DISABLE_K)
+  #define DISABLE_INACTIVE_K
+#endif
+#if !defined(DISABLE_INACTIVE_U) && ENABLED(DISABLE_U)
+  #define DISABLE_INACTIVE_U
+#endif
+#if !defined(DISABLE_INACTIVE_V) && ENABLED(DISABLE_V)
+  #define DISABLE_INACTIVE_V
+#endif
+#if !defined(DISABLE_INACTIVE_W) && ENABLED(DISABLE_W)
+  #define DISABLE_INACTIVE_W
+#endif
+#if !defined(DISABLE_INACTIVE_EXTRUDER) && ENABLED(DISABLE_E)
+  #define DISABLE_INACTIVE_EXTRUDER
+#endif
+#if ANY(DISABLE_INACTIVE_X, DISABLE_INACTIVE_Y, DISABLE_INACTIVE_Z, DISABLE_INACTIVE_I, DISABLE_INACTIVE_J, DISABLE_INACTIVE_K, DISABLE_INACTIVE_U, DISABLE_INACTIVE_V, DISABLE_INACTIVE_W, DISABLE_INACTIVE_EXTRUDER)
+  #define HAS_DISABLE_INACTIVE_AXIS 1
+#endif
+#if ANY(DISABLE_X, DISABLE_Y, DISABLE_Z, DISABLE_I, DISABLE_J, DISABLE_K, DISABLE_U, DISABLE_V, DISABLE_W, DISABLE_E)
+  #define HAS_DISABLE_AXIS 1
 #endif
 
 // Extruder steppers and solenoids
@@ -1652,11 +1646,6 @@
     #endif
   #endif
 
-  #if !defined(DISABLE_INACTIVE_E) && ENABLED(DISABLE_E)
-    #define DISABLE_INACTIVE_E 1
-  #endif
-#else
-  #undef DISABLE_INACTIVE_E
 #endif // HAS_EXTRUDERS
 
 /**
@@ -2251,7 +2240,7 @@
 #define IS_Z3_ENDSTOP(A,M) (ENABLED(Z_MULTI_ENDSTOPS) && NUM_Z_STEPPERS >= 3 && Z3_USE_ENDSTOP == _##A##M##_)
 #define IS_Z4_ENDSTOP(A,M) (ENABLED(Z_MULTI_ENDSTOPS) && NUM_Z_STEPPERS >= 4 && Z4_USE_ENDSTOP == _##A##M##_)
 
-#define _HAS_STOP(A,M) (PIN_EXISTS(A##_##M) && !IS_PROBE_PIN(A,M) && !IS_X2_ENDSTOP(A,M) && !IS_Y2_ENDSTOP(A,M) && !IS_Z2_ENDSTOP(A,M) && !IS_Z3_ENDSTOP(A,M) && !IS_Z4_ENDSTOP(A,M))
+#define _HAS_STOP(A,M) (HAS_##A##_AXIS && PIN_EXISTS(A##_##M) && !IS_PROBE_PIN(A,M) && !IS_X2_ENDSTOP(A,M) && !IS_Y2_ENDSTOP(A,M) && !IS_Z2_ENDSTOP(A,M) && !IS_Z3_ENDSTOP(A,M) && !IS_Z4_ENDSTOP(A,M))
 #if _HAS_STOP(X,MIN)
   #define HAS_X_MIN 1
 #endif
@@ -2472,6 +2461,7 @@
   #define BED_MAX_TARGET (BED_MAXTEMP - (BED_OVERSHOOT))
 #else
   #undef PIDTEMPBED
+  #undef PREHEAT_BEFORE_LEVELING
 #endif
 
 #if HAS_TEMP_COOLER && PIN_EXISTS(COOLER)
@@ -2504,6 +2494,15 @@
 // PID heating
 #if ANY(PIDTEMP, PIDTEMPBED, PIDTEMPCHAMBER)
   #define HAS_PID_HEATING 1
+#endif
+
+#if ENABLED(DWIN_LCD_PROUI)
+  #if EITHER(PIDTEMP, PIDTEMPBED)
+    #define DWIN_PID_TUNE 1
+  #endif
+  #if EITHER(DWIN_PID_TUNE, MPCTEMP) && DISABLED(DISABLE_TUNING_GRAPH)
+    #define SHOW_TUNING_GRAPH 1
+  #endif
 #endif
 
 // Thermal protection
@@ -3045,7 +3044,7 @@
  */
 #if !HAS_FAN
   #undef ADAPTIVE_FAN_SLOWING
-  #undef NO_FAN_SLOWING_IN_PID_TUNING
+  #undef TEMP_TUNING_MAINTAIN_FAN
 #endif
 #if !BOTH(HAS_BED_PROBE, HAS_FAN)
   #undef PROBING_FANS_OFF
@@ -3067,7 +3066,7 @@
  * Advanced Pause - Filament Change
  */
 #if ENABLED(ADVANCED_PAUSE_FEATURE)
-  #if ANY(HAS_MARLINUI_MENU, EXTENSIBLE_UI, DWIN_LCD_PROUI, DWIN_CREALITY_LCD_JYERSUI) || BOTH(EMERGENCY_PARSER, HOST_PROMPT_SUPPORT)
+  #if ANY(HAS_MARLINUI_MENU, EXTENSIBLE_UI, DWIN_LCD_PROUI) || BOTH(EMERGENCY_PARSER, HOST_PROMPT_SUPPORT)
     #define M600_PURGE_MORE_RESUMABLE 1
   #endif
   #ifndef FILAMENT_CHANGE_SLOW_LOAD_LENGTH
@@ -3180,7 +3179,7 @@
   #ifndef MESH_MAX_Y
     #define MESH_MAX_Y _MESH_MAX_Y
   #endif
-#else
+#elif DISABLED(DWIN_LCD_PROUI)
   #undef MESH_MIN_X
   #undef MESH_MIN_Y
   #undef MESH_MAX_X
@@ -3327,7 +3326,7 @@
 #endif
 
 // Number of VFAT entries used. Each entry has 13 UTF-16 characters
-#if EITHER(SCROLL_LONG_FILENAMES, HAS_DWIN_E3V2)
+#if ANY(SCROLL_LONG_FILENAMES, HAS_DWIN_E3V2, TFT_COLOR_UI)
   #define MAX_VFAT_ENTRIES (5)
 #else
   #define MAX_VFAT_ENTRIES (2)

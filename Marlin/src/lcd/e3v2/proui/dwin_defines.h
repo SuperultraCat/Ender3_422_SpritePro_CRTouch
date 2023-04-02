@@ -1,13 +1,12 @@
 /**
- * Marlin 3D Printer Firmware
- * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * DWIN general defines and data structs for PRO UI
+ * Author: Miguel A. Risco-Castillo (MRISCOC)
+ * Version: 3.12.3
+ * Date: 2022/08/08
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -15,48 +14,43 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
+
 #pragma once
 
-/**
- * DWIN general defines and data structs for PRO UI
- * Author: Miguel A. Risco-Castillo (MRISCOC)
- * Version: 3.11.2
- * Date: 2022/02/28
- */
+// #define DEBUG_DWIN 1
+// #define NEED_HEX_PRINT 1
 
-#define HAS_GCODE_PREVIEW 1
-#define HAS_PIDPLOT 1
-#define HAS_ESDIAG 1
-#define HAS_LOCKSCREEN 1
-//#define DEBUG_DWIN 1
-//#define NEED_HEX_PRINT 1
-
-#include "../../../inc/MarlinConfigPre.h"
-#include "../common/dwin_color.h"
-#if ENABLED(LED_CONTROL_MENU)
-  #include "../../../feature/leds/leds.h"
-#endif
-#include <stddef.h>
-
-#if defined(__STM32F1__) || defined(STM32F1)
+#if MB(CREALITY_V24S1_301, CREALITY_V24S1_301F4)
   #define DASH_REDRAW 1
 #endif
 
+#if DISABLED(PROBE_MANUALLY) && ANY(AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_3POINT, AUTO_BED_LEVELING_UBL)
+  #define HAS_ONESTEP_LEVELING 1
+#endif
+
+#if !HAS_BED_PROBE && ENABLED(BABYSTEPPING)
+  #define JUST_BABYSTEP 1
+#endif
+
+#if ANY(BABYSTEPPING, HAS_BED_PROBE)
+  #define HAS_ZOFFSET_ITEM 1
+#endif
+
 #define Def_Background_Color  RGB( 1, 12,  8)
-#define Def_Cursor_color      RGB(20, 49, 31)
-#define Def_TitleBg_color     RGB( 0, 23, 16)
-#define Def_TitleTxt_color    Color_White
+#define Def_Cursor_Color      RGB(20, 49, 31)
+#define Def_TitleBg_Color     RGB( 0, 23, 16)
+#define Def_TitleTxt_Color    Color_White
 #define Def_Text_Color        Color_White
 #define Def_Selected_Color    Select_Color
 #define Def_SplitLine_Color   RGB( 0, 23, 16)
 #define Def_Highlight_Color   Color_White
 #define Def_StatusBg_Color    RGB( 0, 23, 16)
 #define Def_StatusTxt_Color   Color_Yellow
-#define Def_PopupBg_color     Color_Bg_Window
+#define Def_PopupBg_Color     Color_Bg_Window
 #define Def_PopupTxt_Color    Popup_Text_Color
 #define Def_AlertBg_Color     Color_Bg_Red
 #define Def_AlertTxt_Color    Color_Yellow
@@ -65,58 +59,80 @@
 #define Def_Indicator_Color   Color_White
 #define Def_Coordinate_Color  Color_White
 #define Def_Button_Color      RGB( 0, 23, 16)
-#if BOTH(LED_CONTROL_MENU, HAS_COLOR_LEDS)
-  #define Def_Leds_Color      LEDColorWhite()
+#define Def_Leds_Color        0xFFFFFFFF
+#define Def_CaseLight_Brightness 255
+#define DEF_Z_AFTER_HOMING TERN(Z_AFTER_HOMING, Z_AFTER_HOMING, 0)
+#define DEF_HOTENDPIDT TERN(PREHEAT_1_TEMP_BED, PREHEAT_1_TEMP_HOTEND, 195)
+#define DEF_BEDPIDT TERN(PREHEAT_1_TEMP_BED, PREHEAT_1_TEMP_HOTEND, 60)
+#define DEF_PIDCYCLES 5
+
+//=============================================================================
+// Only for Professional Firmware UI extensions
+//=============================================================================
+
+#if ENABLED(HAS_GCODE_PREVIEW) && DISABLED(ProUIex)
+  #error "HAS_GCODE_PREVIEW requires ProUIex."
+#endif
+#if ENABLED(HAS_TOOLBAR) && DISABLED(ProUIex)
+  #error "HAS_TOOLBAR requires ProUIex."
 #endif
 
-typedef struct {
-  // Color settings
-  uint16_t Background_Color = Def_Background_Color;
-  uint16_t Cursor_color     = Def_Cursor_color;
-  uint16_t TitleBg_color    = Def_TitleBg_color;
-  uint16_t TitleTxt_color   = Def_TitleTxt_color;
-  uint16_t Text_Color       = Def_Text_Color;
-  uint16_t Selected_Color   = Def_Selected_Color;
-  uint16_t SplitLine_Color  = Def_SplitLine_Color;
-  uint16_t Highlight_Color  = Def_Highlight_Color;
-  uint16_t StatusBg_Color   = Def_StatusBg_Color;
-  uint16_t StatusTxt_Color  = Def_StatusTxt_Color;
-  uint16_t PopupBg_color    = Def_PopupBg_color;
-  uint16_t PopupTxt_Color   = Def_PopupTxt_Color;
-  uint16_t AlertBg_Color    = Def_AlertBg_Color;
-  uint16_t AlertTxt_Color   = Def_AlertTxt_Color;
-  uint16_t PercentTxt_Color = Def_PercentTxt_Color;
-  uint16_t Barfill_Color    = Def_Barfill_Color;
-  uint16_t Indicator_Color  = Def_Indicator_Color;
-  uint16_t Coordinate_Color = Def_Coordinate_Color;
-  // Temperatures
-  #if HAS_HOTEND && defined(PREHEAT_1_TEMP_HOTEND)
-    int16_t HotendPidT = PREHEAT_1_TEMP_HOTEND;
-  #endif
-  #if HAS_HEATED_BED && defined(PREHEAT_1_TEMP_BED)
-    int16_t BedPidT = PREHEAT_1_TEMP_BED;
-  #endif
-  #if HAS_HOTEND || HAS_HEATED_BED
-    int16_t PidCycles = 10;
-  #endif
-  #if ENABLED(PREVENT_COLD_EXTRUSION)
-    int16_t ExtMinT = EXTRUDE_MINTEMP;
-  #endif
-  #if BOTH(HAS_HEATED_BED, PREHEAT_BEFORE_LEVELING)
-    int16_t BedLevT = LEVELING_BED_TEMP;
-  #endif
-  #if ENABLED(BAUD_RATE_GCODE)
-    bool Baud115K = false;
-  #endif
-  bool FullManualTramming = false;
-  #if ENABLED(MESH_BED_LEVELING)
-    float ManualZOffset = 0;
-  #endif
-  // Led
-  #if BOTH(LED_CONTROL_MENU, HAS_COLOR_LEDS)
-    LEDColor Led_Color = Def_Leds_Color;
-  #endif
-} HMI_data_t;
+#if ProUIex
 
-static constexpr size_t eeprom_data_size = sizeof(HMI_data_t);
-extern HMI_data_t HMI_data;
+  #include <stddef.h>
+  #include "../../../core/types.h"
+
+  #define TBMaxOpt 5                    // Amount of shortcuts on screen
+  #if HAS_BED_PROBE
+    #define DEF_TBOPT {1, 2, 3, 4, 5}   // Default shorcuts for ALB/UBL
+  #else
+    #define DEF_TBOPT {1, 2, 5, 6, 7};  // Default shortcuts for MM
+  #endif
+
+  #include "proui.h"
+
+  #undef X_BED_SIZE
+  #undef Y_BED_SIZE
+  #undef X_MIN_POS
+  #undef Y_MIN_POS
+  #undef X_MAX_POS
+  #undef Y_MAX_POS
+  #undef Z_MAX_POS
+  #undef NOZZLE_PARK_POINT
+  #if HAS_MESH
+    #undef GRID_MAX_POINTS_X
+    #undef GRID_MAX_POINTS_Y
+    #undef GRID_MAX_POINTS
+    #undef MESH_MIN_X
+    #undef MESH_MAX_X
+    #undef MESH_MIN_Y
+    #undef MESH_MAX_Y
+  #endif
+  #if HAS_BED_PROBE
+    #undef Z_PROBE_FEEDRATE_SLOW
+  #endif
+  #undef INVERT_E0_DIR
+
+  #define X_BED_SIZE (float)PRO_data.x_bed_size
+  #define Y_BED_SIZE (float)PRO_data.y_bed_size
+  #define X_MIN_POS  (float)PRO_data.x_min_pos
+  #define Y_MIN_POS  (float)PRO_data.y_min_pos
+  #define X_MAX_POS  (float)PRO_data.x_max_pos
+  #define Y_MAX_POS  (float)PRO_data.y_max_pos
+  #define Z_MAX_POS  (float)PRO_data.z_max_pos
+  #define NOZZLE_PARK_POINT {(float)PRO_data.Park_point.x, (float)PRO_data.Park_point.y, (float)PRO_data.Park_point.z}
+  #if HAS_MESH
+    #define GRID_MAX_POINTS_X PRO_data.grid_max_points
+    #define GRID_MAX_POINTS_Y PRO_data.grid_max_points
+    #define GRID_MAX_POINTS (PRO_data.grid_max_points * PRO_data.grid_max_points)
+    #define MESH_MIN_X PRO_data.mesh_min_x
+    #define MESH_MAX_X PRO_data.mesh_max_x
+    #define MESH_MIN_Y PRO_data.mesh_min_y
+    #define MESH_MAX_Y PRO_data.mesh_max_y
+  #endif
+  #if HAS_BED_PROBE
+    #define Z_PROBE_FEEDRATE_SLOW PRO_data.zprobefeedslow
+  #endif
+  #define INVERT_E0_DIR PRO_data.Invert_E0
+
+#endif  // ProUIex

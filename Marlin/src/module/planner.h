@@ -156,6 +156,14 @@ typedef struct {
 
 } block_flags_t;
 
+#if ENABLED(AUTOTEMP)
+  typedef struct {
+    celsius_t min, max;
+    float factor;
+    bool enabled;
+  } autotemp_t;
+#endif
+
 #if ENABLED(LASER_FEATURE)
 
   typedef struct {
@@ -188,7 +196,7 @@ typedef struct {
  * The "nominal" values are as-specified by G-code, and
  * may never actually be reached due to acceleration limits.
  */
-typedef struct PlannerBlock {
+typedef struct block_t {
 
   volatile block_flags_t flag;              // Block flags
 
@@ -326,28 +334,24 @@ typedef struct {
   };
 #endif
 
-#if DISABLED(SKEW_CORRECTION)
-  #define XY_SKEW_FACTOR 0
-  #define XZ_SKEW_FACTOR 0
-  #define YZ_SKEW_FACTOR 0
+#if ENABLED(SKEW_CORRECTION)
+  typedef struct {
+    #if ENABLED(SKEW_CORRECTION_GCODE)
+      float xy;
+      #if ENABLED(SKEW_CORRECTION_FOR_Z)
+        float xz, yz;
+      #else
+        const float xz = XZ_SKEW_FACTOR, yz = YZ_SKEW_FACTOR;
+      #endif
+    #else
+      const float xy = XY_SKEW_FACTOR,
+                  xz = XZ_SKEW_FACTOR, yz = YZ_SKEW_FACTOR;
+    #endif
+  } skew_factor_t;
 #endif
 
-typedef struct {
-  #if ENABLED(SKEW_CORRECTION_GCODE)
-    float xy;
-    #if ENABLED(SKEW_CORRECTION_FOR_Z)
-      float xz, yz;
-    #else
-      const float xz = XZ_SKEW_FACTOR, yz = YZ_SKEW_FACTOR;
-    #endif
-  #else
-    const float xy = XY_SKEW_FACTOR,
-                xz = XZ_SKEW_FACTOR, yz = YZ_SKEW_FACTOR;
-  #endif
-} skew_factor_t;
-
 #if ENABLED(DISABLE_INACTIVE_EXTRUDER)
-  typedef IF<(BLOCK_BUFFER_SIZE > 64), uint16_t, uint8_t>::type last_move_t;
+  typedef uvalue_t(BLOCK_BUFFER_SIZE * 2) last_move_t;
 #endif
 
 #if ENABLED(ARC_SUPPORT)
@@ -371,6 +375,11 @@ struct PlannerHints {
                                       // would calculate if it knew the as-yet-unbuffered path
   #endif
 
+  #if HAS_ROTATIONAL_AXES
+    bool cartesian_move = true;       // True if linear motion of the tool centerpoint relative to the workpiece occurs.
+                                      // False if no movement of the tool center point relative to the work piece occurs
+                                      // (i.e. the tool rotates around the tool centerpoint)
+  #endif
   PlannerHints(const_float_t mm=0.0f) : millimeters(mm) {}
 };
 
@@ -476,7 +485,9 @@ class Planner {
       static xyze_pos_t position_cart;
     #endif
 
-    static skew_factor_t skew_factor;
+    #if ENABLED(SKEW_CORRECTION)
+      static skew_factor_t skew_factor;
+    #endif
 
     #if ENABLED(SD_ABORT_ON_ENDSTOP_HIT)
       static bool abort_on_endstop_hit;
@@ -522,7 +533,7 @@ class Planner {
 
     #if ENABLED(DISABLE_INACTIVE_EXTRUDER)
       // Counters to manage disabling inactive extruder steppers
-      static last_move_t g_uc_extruder_last_move[E_STEPPERS];
+      static last_move_t extruder_last_move[E_STEPPERS];
     #endif
 
     #if HAS_WIRED_LCD
@@ -972,9 +983,7 @@ class Planner {
     #endif
 
     #if ENABLED(AUTOTEMP)
-      static celsius_t autotemp_min, autotemp_max;
-      static float autotemp_factor;
-      static bool autotemp_enabled;
+      static autotemp_t autotemp;
       static void autotemp_update();
       static void autotemp_M104_M109();
       static void autotemp_task();

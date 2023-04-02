@@ -222,7 +222,7 @@ void GcodeSuite::M115() {
 
     // Machine Geometry
     #if ENABLED(M115_GEOMETRY_REPORT)
-      constexpr xyz_pos_t bmin{0},
+      TERN(ProUIex, const, constexpr) xyz_pos_t bmin{0},
                           bmax = ARRAY_N(NUM_AXES, X_BED_SIZE, Y_BED_SIZE, Z_MAX_POS, I_MAX_POS, J_MAX_POS, K_MAX_POS, U_MAX_POS, V_MAX_POS, W_MAX_POS),
                           dmin = ARRAY_N(NUM_AXES, X_MIN_POS,  Y_MIN_POS,  Z_MIN_POS, I_MIN_POS, J_MIN_POS, K_MIN_POS, U_MIN_POS, V_MIN_POS, W_MIN_POS),
                           dmax = ARRAY_N(NUM_AXES, X_MAX_POS,  Y_MAX_POS,  Z_MAX_POS, I_MAX_POS, J_MAX_POS, K_MAX_POS, U_MAX_POS, V_MAX_POS, W_MAX_POS);
@@ -232,7 +232,7 @@ void GcodeSuite::M115() {
       const xyz_pos_t lmin = dmin.asLogical(), lmax = dmax.asLogical(),
                       wmin = cmin.asLogical(), wmax = cmax.asLogical();
 
-      SERIAL_ECHOLNPGM(
+      SERIAL_ECHOPGM(
         "area:{"
           "full:{"
             "min:{"
@@ -249,6 +249,8 @@ void GcodeSuite::M115() {
               ),
             "}" // max
           "}," // full
+      );
+      SERIAL_ECHOLNPGM(
           "work:{"
             "min:{"
               LIST_N(DOUBLE(NUM_AXES),

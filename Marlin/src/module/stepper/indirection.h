@@ -454,7 +454,7 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
 /**
  * Extruder indirection for the single E axis
  */
-#if ENABLED(SWITCHING_EXTRUDER) // One stepper driver per two extruders, reversed on odd index
+#if HAS_SWITCHING_EXTRUDER // One stepper driver per two extruders, reversed on odd index
   #if EXTRUDERS > 7
     #define E_STEP_WRITE(E,V) do{ if (E < 2) { E0_STEP_WRITE(V); } else if (E < 4) { E1_STEP_WRITE(V); } else if (E < 6) { E2_STEP_WRITE(V); } else { E3_STEP_WRITE(V); } }while(0)
     #define   NORM_E_DIR(E)   do{ switch (E) { \
@@ -705,8 +705,8 @@ void reset_stepper_drivers();    // Called by settings.load / settings.reset
 
 #elif E_STEPPERS
   #define E_STEP_WRITE(E,V) E0_STEP_WRITE(V)
-  #define   NORM_E_DIR(E)   E0_DIR_WRITE(DISABLED(INVERT_E0_DIR))
-  #define    REV_E_DIR(E)   E0_DIR_WRITE( ENABLED(INVERT_E0_DIR))
+  #define   NORM_E_DIR(E)   E0_DIR_WRITE(TERN(ProUIex, !INVERT_E0_DIR, DISABLED(INVERT_E0_DIR)))
+  #define    REV_E_DIR(E)   E0_DIR_WRITE(TERN(ProUIex, INVERT_E0_DIR, ENABLED(INVERT_E0_DIR)))
 
 #else
   #define E_STEP_WRITE(E,V) NOOP

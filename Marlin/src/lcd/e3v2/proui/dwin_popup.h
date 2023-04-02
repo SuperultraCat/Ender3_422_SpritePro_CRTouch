@@ -1,13 +1,12 @@
 /**
- * Marlin 3D Printer Firmware
- * Copyright (c) 2021 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+ * DWIN Enhanced implementation for PRO UI
+ * Author: Miguel A. Risco-Castillo (MRISCOC)
+ * Version: 3.11.1
+ * Date: 2022/02/28
  *
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -15,36 +14,26 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
 #pragma once
 
-/**
- * DWIN Enhanced implementation for PRO UI
- * Author: Miguel A. Risco-Castillo (MRISCOC)
- * Version: 3.11.1
- * Date: 2022/02/28
- */
-
-#include "dwinui.h"
 #include "dwin.h"
+#include "dwinui.h"
 
-typedef void (*popupDrawFunc_t)();
-typedef void (*popupClickFunc_t)();
-typedef void (*popupChangeFunc_t)(const bool state);
-extern popupDrawFunc_t popupDraw;
+extern void (*Draw_Popup)();
 
 void Draw_Select_Highlight(const bool sel, const uint16_t ypos);
 inline void Draw_Select_Highlight(const bool sel) { Draw_Select_Highlight(sel, 280); };
 void DWIN_Popup_Continue(const uint8_t icon, FSTR_P const fmsg1, FSTR_P const fmsg2);
 void DWIN_Popup_ConfirmCancel(const uint8_t icon, FSTR_P const fmsg2);
-void Goto_Popup(const popupDrawFunc_t fnDraw, const popupClickFunc_t fnClick=nullptr, const popupChangeFunc_t fnChange=nullptr);
+void Goto_Popup(void (*onPopupDraw)(), void (*onClickPopup)() = nullptr, void (*onPopupChange)(bool state) = nullptr);
 void HMI_Popup();
 
 inline void Draw_Popup_Bkgd() {
-  DWIN_Draw_Rectangle(1, HMI_data.PopupBg_color, 14, 60, 258, 330);
+  DWIN_Draw_Rectangle(1, HMI_data.PopupBg_Color, 14, 60, 258, 330);
   DWIN_Draw_Rectangle(0, HMI_data.Highlight_Color, 14, 60, 258, 330);
 }
 

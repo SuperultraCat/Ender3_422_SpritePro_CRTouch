@@ -38,6 +38,10 @@
   #include "../lcd/extui/ui_api.h"
 #endif
 
+#if ProUIex
+  #include "../lcd/e3v2/proui/proui.h"
+#endif
+
 //#define FILAMENT_RUNOUT_SENSOR_DEBUG
 #ifndef FILAMENT_RUNOUT_THRESHOLD
   #define FILAMENT_RUNOUT_THRESHOLD 5
@@ -47,8 +51,12 @@ void event_filament_runout(const uint8_t extruder);
 
 template<class RESPONSE_T, class SENSOR_T>
 class TFilamentMonitor;
-class FilamentSensorEncoder;
-class FilamentSensorSwitch;
+#if ProUIex
+  class FilamentSensorDevice;
+#else
+  class FilamentSensorEncoder;
+  class FilamentSensorSwitch;
+#endif
 class RunoutResponseDelayed;
 class RunoutResponseDebounced;
 
@@ -56,7 +64,11 @@ class RunoutResponseDebounced;
 
 typedef TFilamentMonitor<
           TERN(HAS_FILAMENT_RUNOUT_DISTANCE, RunoutResponseDelayed, RunoutResponseDebounced),
-          TERN(FILAMENT_MOTION_SENSOR, FilamentSensorEncoder, FilamentSensorSwitch)
+          #if ProUIex
+            FilamentSensorDevice
+          #else
+            TERN(FILAMENT_MOTION_SENSOR, FilamentSensorEncoder, FilamentSensorSwitch)
+          #endif
         > FilamentMonitor;
 
 extern FilamentMonitor runout;
@@ -177,7 +189,11 @@ class FilamentSensorBase {
       #define _INIT_RUNOUT_PIN(P,S,U,D) do{ if (ENABLED(U)) SET_INPUT_PULLUP(P); else if (ENABLED(D)) SET_INPUT_PULLDOWN(P); else SET_INPUT(P); }while(0)
       #define  INIT_RUNOUT_PIN(N) _INIT_RUNOUT_PIN(FIL_RUNOUT##N##_PIN, FIL_RUNOUT##N##_STATE, FIL_RUNOUT##N##_PULLUP, FIL_RUNOUT##N##_PULLDOWN)
       #if NUM_RUNOUT_SENSORS >= 1
-        INIT_RUNOUT_PIN(1);
+        #if ProUIex
+          ProEx.SetRunoutState(FIL_RUNOUT1_PIN);
+        #else
+          INIT_RUNOUT_PIN(1);
+        #endif  
       #endif
       #if NUM_RUNOUT_SENSORS >= 2
         INIT_RUNOUT_PIN(2);
@@ -211,38 +227,52 @@ class FilamentSensorBase {
       #undef _OR_RUNOUT
     }
 
-    // Return a bitmask of runout flag states (1 bits always indicates runout)
-    static uint8_t poll_runout_states() {
-      return poll_runout_pins() ^ uint8_t(0
-        #if NUM_RUNOUT_SENSORS >= 1
-          | (FIL_RUNOUT1_STATE ? 0 : _BV(1 - 1))
-        #endif
-        #if NUM_RUNOUT_SENSORS >= 2
-          | (FIL_RUNOUT2_STATE ? 0 : _BV(2 - 1))
-        #endif
-        #if NUM_RUNOUT_SENSORS >= 3
-          | (FIL_RUNOUT3_STATE ? 0 : _BV(3 - 1))
-        #endif
-        #if NUM_RUNOUT_SENSORS >= 4
-          | (FIL_RUNOUT4_STATE ? 0 : _BV(4 - 1))
-        #endif
-        #if NUM_RUNOUT_SENSORS >= 5
-          | (FIL_RUNOUT5_STATE ? 0 : _BV(5 - 1))
-        #endif
-        #if NUM_RUNOUT_SENSORS >= 6
-          | (FIL_RUNOUT6_STATE ? 0 : _BV(6 - 1))
-        #endif
-        #if NUM_RUNOUT_SENSORS >= 7
-          | (FIL_RUNOUT7_STATE ? 0 : _BV(7 - 1))
-        #endif
-        #if NUM_RUNOUT_SENSORS >= 8
-          | (FIL_RUNOUT8_STATE ? 0 : _BV(8 - 1))
-        #endif
-      );
-    }
+    #if !ProUIex
+      // Return a bitmask of runout flag states (1 bits always indicates runout)
+      static uint8_t poll_runout_states() {
+        return poll_runout_pins() ^ uint8_t(0
+          #if NUM_RUNOUT_SENSORS >= 1
+            | (FIL_RUNOUT1_STATE ? 0 : _BV(1 - 1))
+          #endif
+          #if NUM_RUNOUT_SENSORS >= 2
+            | (FIL_RUNOUT2_STATE ? 0 : _BV(2 - 1))
+          #endif
+          #if NUM_RUNOUT_SENSORS >= 3
+            | (FIL_RUNOUT3_STATE ? 0 : _BV(3 - 1))
+          #endif
+          #if NUM_RUNOUT_SENSORS >= 4
+            | (FIL_RUNOUT4_STATE ? 0 : _BV(4 - 1))
+          #endif
+          #if NUM_RUNOUT_SENSORS >= 5
+            | (FIL_RUNOUT5_STATE ? 0 : _BV(5 - 1))
+          #endif
+          #if NUM_RUNOUT_SENSORS >= 6
+            | (FIL_RUNOUT6_STATE ? 0 : _BV(6 - 1))
+          #endif
+          #if NUM_RUNOUT_SENSORS >= 7
+            | (FIL_RUNOUT7_STATE ? 0 : _BV(7 - 1))
+          #endif
+          #if NUM_RUNOUT_SENSORS >= 8
+            | (FIL_RUNOUT8_STATE ? 0 : _BV(8 - 1))
+          #endif
+        );
+      }
+    #endif
 };
 
-#if ENABLED(FILAMENT_MOTION_SENSOR)
+#if ProUIex
+
+  class FilamentSensorDevice : public FilamentSensorBase {
+  private:
+    static uint8_t motion_detected;
+    static void poll_motion_sensor();
+  public:
+    static bool poll_runout_state(const uint8_t extruder);
+    static void block_completed(const block_t * const b);
+    static void run();
+  };  
+
+#elif ENABLED(FILAMENT_MOTION_SENSOR)
 
   /**
    * This sensor uses a magnetic encoder disc and a Hall effect

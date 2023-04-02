@@ -72,8 +72,6 @@
     #include "lcd/e3v2/creality/dwin.h"
   #elif ENABLED(DWIN_LCD_PROUI)
     #include "lcd/e3v2/proui/dwin.h"
-  #elif ENABLED(DWIN_CREALITY_LCD_JYERSUI)
-    #include "lcd/e3v2/jyersui/dwin.h"
   #endif
 #endif
 
@@ -232,7 +230,7 @@
   #include "feature/password/password.h"
 #endif
 
-#if ENABLED(DGUS_LCD_UI_MKS)
+#if DGUS_LCD_UI_MKS
   #include "lcd/extui/dgus/DGUSScreenHandler.h"
 #endif
 
@@ -446,7 +444,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
           TERN_(DISABLE_INACTIVE_U, stepper.disable_axis(U_AXIS));
           TERN_(DISABLE_INACTIVE_V, stepper.disable_axis(V_AXIS));
           TERN_(DISABLE_INACTIVE_W, stepper.disable_axis(W_AXIS));
-          TERN_(DISABLE_INACTIVE_E, stepper.disable_e_steppers());
+          TERN_(DISABLE_INACTIVE_EXTRUDER, stepper.disable_e_steppers());
 
           TERN_(AUTO_BED_LEVELING_UBL, bedlevel.steppers_were_disabled());
         }
@@ -667,7 +665,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
       && ELAPSED(ms, gcode.previous_move_ms + SEC_TO_MS(EXTRUDER_RUNOUT_SECONDS))
       && !planner.has_blocks_queued()
     ) {
-      #if ENABLED(SWITCHING_EXTRUDER)
+      #if HAS_SWITCHING_EXTRUDER
         bool oldstatus;
         switch (active_extruder) {
           default: oldstatus = stepper.AXIS_IS_ENABLED(E_AXIS, 0); stepper.ENABLE_EXTRUDER(0); break;
@@ -681,7 +679,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
             #endif // E_STEPPERS > 2
           #endif // E_STEPPERS > 1
         }
-      #else // !SWITCHING_EXTRUDER
+      #else // !HAS_SWITCHING_EXTRUDER
         bool oldstatus;
         switch (active_extruder) {
           default:
@@ -697,7 +695,7 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
       planner.set_e_position_mm(olde);
       planner.synchronize();
 
-      #if ENABLED(SWITCHING_EXTRUDER)
+      #if HAS_SWITCHING_EXTRUDER
         switch (active_extruder) {
           default: if (oldstatus) stepper.ENABLE_EXTRUDER(0); else stepper.DISABLE_EXTRUDER(0); break;
           #if E_STEPPERS > 1
@@ -707,12 +705,12 @@ inline void manage_inactivity(const bool no_stepper_sleep=false) {
             #endif // E_STEPPERS > 2
           #endif // E_STEPPERS > 1
         }
-      #else // !SWITCHING_EXTRUDER
+      #else // !HAS_SWITCHING_EXTRUDER
         switch (active_extruder) {
           #define _CASE_RESTORE(N) case N: if (oldstatus) stepper.ENABLE_EXTRUDER(N); else stepper.DISABLE_EXTRUDER(N); break;
           REPEAT(E_STEPPERS, _CASE_RESTORE);
         }
-      #endif // !SWITCHING_EXTRUDER
+      #endif // !HAS_SWITCHING_EXTRUDER
 
       gcode.reset_stepper_timeout(ms);
     }
@@ -1277,15 +1275,19 @@ void setup() {
   if (mcu & RST_WATCHDOG)  SERIAL_ECHOLNPGM(STR_WATCHDOG_RESET);
   if (mcu & RST_SOFTWARE)  SERIAL_ECHOLNPGM(STR_SOFTWARE_RESET);
 
-  // Identify myself as Marlin x.x.x
-  SERIAL_ECHOLNPGM("Marlin " SHORT_BUILD_VERSION);
-  #if defined(STRING_DISTRIBUTION_DATE) && defined(STRING_CONFIG_H_AUTHOR)
-    SERIAL_ECHO_MSG(
-      " Last Updated: " STRING_DISTRIBUTION_DATE
-      " | Author: " STRING_CONFIG_H_AUTHOR
-    );
+  #if ProUIex
+    ProEx.C115();
+  #else
+    // Identify myself as Marlin x.x.x
+    SERIAL_ECHOLNPGM("Marlin " SHORT_BUILD_VERSION);
+    #if defined(STRING_DISTRIBUTION_DATE) && defined(STRING_CONFIG_H_AUTHOR)
+      SERIAL_ECHO_MSG(
+        " Last Updated: " STRING_DISTRIBUTION_DATE
+        " | Author: " STRING_CONFIG_H_AUTHOR
+      );
+    #endif
+    SERIAL_ECHO_MSG(" Compiled: " __DATE__);
   #endif
-  SERIAL_ECHO_MSG(" Compiled: " __DATE__);
   SERIAL_ECHO_MSG(STR_FREE_MEMORY, hal.freeMemory(), STR_PLANNER_BUFFER_BYTES, sizeof(block_t) * (BLOCK_BUFFER_SIZE));
 
   // Some HAL need precise delay adjustment

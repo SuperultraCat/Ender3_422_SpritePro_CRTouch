@@ -1,9 +1,11 @@
-/*
- * Marlin 3D Printer Firmware
- * Copyright (c) 2022 MarlinFirmware [https://github.com/MarlinFirmware/Marlin]
- *
- * Based on Sprinter and grbl.
- * Copyright (c) 2011 Camiel Gubbels / Erik van der Zalm
+/**
+ * Bed Level Tools for Pro UI
+ * Extended by: Miguel A. Risco-Castillo (MRISCOC)
+ * Version: 2.1.0
+ * Date: 2022/08/27
+ * 
+ * Based on the original work of: Henri-J-Norden
+ * https://github.com/Jyers/Marlin/pull/126
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,31 +21,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  */
-
-/**
- * Bed Level Tools for Pro UI
- * Extended by: Miguel A. Risco-Castillo (MRISCOC)
- * Version: 2.0.0
- * Date: 2022/05/23
- *
- * Based on the original work of: Henri-J-Norden
- * https://github.com/Jyers/Marlin/pull/126
- */
-
 #pragma once
 
 #include "../../../inc/MarlinConfigPre.h"
 
-#if ENABLED(AUTO_BED_LEVELING_UBL)
-  //#define USE_UBL_VIEWER 1
-#endif
+//#define USE_UBL_VIEWER 1
 
-#define MESH_Z_OFFSET_MIN -3.0
-#define MESH_Z_OFFSET_MAX  3.0
+#define UBL_Z_OFFSET_MIN -3.0
+#define UBL_Z_OFFSET_MAX  3.0
 
 class BedLevelToolsClass {
 public:
-  #if USE_UBL_VIEWER
+  #if ENABLED(USE_UBL_VIEWER)
     static bool viewer_asymmetric_range;
     static bool viewer_print_value;
   #endif
@@ -66,12 +55,10 @@ public:
   static float get_max_value();
   static float get_min_value();
   static bool meshvalidate();
-  #if USE_UBL_VIEWER
+  #if ENABLED(USE_UBL_VIEWER)
     static void Draw_Bed_Mesh(int16_t selected = -1, uint8_t gridline_width = 1, uint16_t padding_x = 8, uint16_t padding_y_top = 40 + 53 - 7);
     static void Set_Mesh_Viewer_Status();
   #endif
 };
 
-extern BedLevelToolsClass BedLevelTools;
-
-void Goto_MeshViewer();
+extern BedLevelToolsClass bedLevelTools;

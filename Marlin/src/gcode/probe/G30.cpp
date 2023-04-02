@@ -37,7 +37,7 @@
   #include "../../module/tool_change.h"
 #endif
 
-#if EITHER(DWIN_LCD_PROUI, DWIN_CREALITY_LCD_JYERSUI)
+#if ENABLED(DWIN_LCD_PROUI)
   #include "../../lcd/marlinui.h"
 #endif
 
@@ -70,9 +70,8 @@ void GcodeSuite::G30() {
 
     remember_feedrate_scaling_off();
 
-    #if EITHER(DWIN_LCD_PROUI, DWIN_CREALITY_LCD_JYERSUI)
-      process_subcommands_now(F("G28O"));
-    #endif
+    TERN_(DWIN_LCD_PROUI, process_subcommands_now(F("G28O")));
+
 
     const ProbePtRaise raise_after = parser.boolval('E', true) ? PROBE_PT_STOW : PROBE_PT_NONE;
 
@@ -81,12 +80,12 @@ void GcodeSuite::G30() {
     TERN_(HAS_PTC, ptc.set_enabled(true));
     if (!isnan(measured_z)) {
       SERIAL_ECHOLNPGM("Bed X: ", pos.asLogical().x, " Y: ", pos.asLogical().y, " Z: ", measured_z);
-      #if EITHER(DWIN_LCD_PROUI, DWIN_CREALITY_LCD_JYERSUI)
+      #if ENABLED(DWIN_LCD_PROUI)
         char msg[31], str_1[6], str_2[6], str_3[6];
         sprintf_P(msg, PSTR("X:%s, Y:%s, Z:%s"),
           dtostrf(pos.x, 1, 1, str_1),
           dtostrf(pos.y, 1, 1, str_2),
-          dtostrf(measured_z, 1, 2, str_3)
+          dtostrf(measured_z, 1, 3, str_3)
         );
         ui.set_status(msg);
       #endif
